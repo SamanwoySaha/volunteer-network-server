@@ -15,8 +15,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 client.connect(err => {
-    const collection = client.db("test").collection("devices");
+    const eventsCollection = client.db("volunteerNetwork").collection("events");
     console.log('Database connection established...');
+
+    app.get('/events', (req, res) => {
+        eventsCollection.find({})
+        .toArray((err, documents) => {
+            if(err){
+                res.send(err.message);
+            }
+            res.send(documents);
+        })
+    })
 });
 
 app.get('/', (req, res) => {
