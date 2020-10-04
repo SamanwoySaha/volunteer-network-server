@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectID;
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
@@ -15,24 +16,113 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 client.connect(err => {
-    const eventsCollection = client.db("volunteerNetwork").collection("events");
-    console.log('Database connection established...');
+  const eventsCollection = client.db("volunteerNetwork").collection("events");
+  const volunteersCollection = client.db("volunteerNetwork").collection("volunteers");
 
-    app.get('/events', (req, res) => {
-        eventsCollection.find({})
-        .toArray((err, documents) => {
-            if(err){
-                res.send(err.message);
+  app.get('/volunteerList', (req, res) => {
+    volunteersCollection.find({})
+      .toArray((err, documents) => {
+        if (err) {
+          res.status(404).send(err.message);
+        }
+        res.send(documents);
+      })
+  })
+
+  app.get('/volunteerDetail', (req, res) => {
+    volunteersCollection.find({ email: req.query.email })
+      .toArray((err, documents) => {
+        if (err) {
+          res.status(404).send(err.message);
+        }
+        res.send(documents);
+      })
+  })
+
+  app.get('/events', (req, res) => {
+    eventsCollection.find({})
+      .toArray((err, documents) => {
+        if (err) {
+          res.status(404).send(err.message);
+        }
+        res.send(documents);
+      })
+  })
+
+  app.get('/specificEvents', (req, res) => {
+    eventsCollection.find({ name: new RegExp('.*' + req.query.search + '.*', 'i') })
+      .toArray((err, documents) => {
+        if (err) {
+          res.status(404).send(err.message);
+        }
+        res.send(documents);
+      })
+  })
+
+  app.post('/addVolunteer', (req, res) => {
+    volunteersCollection.find({
+      email: req.body.email,
+      eventDate: req.body.eventDate,
+      eventName: req.body.eventName
+    }).toArray((err, documents) => {
+      if (documents.length > 1) {
+        res.status(404).send('already added');
+      }
+      else {
+        volunteersCollection.insertOne(req.body)
+          .then(result => {
+            if(result.insertedCount > 0){
+              res.send(result.insertedCount > 0)
             }
-            res.send(documents);
-        })
+            else{
+              res.status(404).send('Error 404');
+            }
+          })
+      }
     })
+  })
+
+  app.post('/addEvent', (req, res) => {
+    eventsCollection.insertOne(req.body)
+      .then(result => {
+        if(result.insertedCount > 0){
+          res.send(result.insertedCount > 0)
+        }
+        else{
+          res.status(404).send('Error 404');
+        }
+      })
+  })
+
+  app.delete('/removeEvent', (req, res) => {
+    volunteersCollection.deleteOne({ _id: ObjectId(req.body.id) })
+      .then(result => {
+        if (result.deletedCount > 0) {
+          volunteersCollection.find({ email: req.body.email })
+            .toArray((err, documents) => {
+              res.send(documents);
+            })
+        }
+        else{
+          res.status(404).send('Error 404');
+        }
+      })
+  })
+
+  app.delete('/removeVolunteer', (req, res) => {
+    volunteersCollection.deleteOne({ _id: ObjectId(req.body.id) })
+      .then(result => {
+        if (result.deletedCount > 0) {
+          volunteersCollection.find({})
+            .toArray((err, documents) => {
+              res.send(documents);
+            })
+        }
+        else {
+          res.status(404).send('error 404')
+        }
+      })
+  })
 });
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
-app.listen(port, () => {
-  console.log(`Listening to port ${port}...`);
-})
+app.listen(port);
