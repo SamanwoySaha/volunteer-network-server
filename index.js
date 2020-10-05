@@ -49,6 +49,16 @@ client.connect(err => {
       })
   })
 
+  app.get('/eventById/:id', (req, res) => {
+    eventsCollection.find({_id : ObjectId(req.params.id)})
+      .toArray((err, documents) => {
+        if (err) {
+          res.status(404).send(err.message);
+        }
+        res.send(documents);
+      })
+  })
+
   app.get('/specificEvents', (req, res) => {
     eventsCollection.find({ name: new RegExp('.*' + req.query.search + '.*', 'i') })
       .toArray((err, documents) => {
