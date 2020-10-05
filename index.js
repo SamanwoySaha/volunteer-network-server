@@ -50,7 +50,7 @@ client.connect(err => {
   })
 
   app.get('/eventById/:id', (req, res) => {
-    eventsCollection.find({_id : ObjectId(req.params.id)})
+    eventsCollection.find({ _id: ObjectId(req.params.id) })
       .toArray((err, documents) => {
         if (err) {
           res.status(404).send(err.message);
@@ -81,10 +81,10 @@ client.connect(err => {
       else {
         volunteersCollection.insertOne(req.body)
           .then(result => {
-            if(result.insertedCount > 0){
+            if (result.insertedCount > 0) {
               res.send(result.insertedCount > 0)
             }
-            else{
+            else {
               res.status(404).send('Error 404');
             }
           })
@@ -95,10 +95,10 @@ client.connect(err => {
   app.post('/addEvent', (req, res) => {
     eventsCollection.insertOne(req.body)
       .then(result => {
-        if(result.insertedCount > 0){
+        if (result.insertedCount > 0) {
           res.send(result.insertedCount > 0)
         }
-        else{
+        else {
           res.status(404).send('Error 404');
         }
       })
@@ -108,12 +108,9 @@ client.connect(err => {
     volunteersCollection.deleteOne({ _id: ObjectId(req.body.id) })
       .then(result => {
         if (result.deletedCount > 0) {
-          volunteersCollection.find({ email: req.body.email })
-            .toArray((err, documents) => {
-              res.send(documents);
-            })
+          res.send(result.deletedCount > 0)
         }
-        else{
+        else {
           res.status(404).send('Error 404');
         }
       })
@@ -123,13 +120,10 @@ client.connect(err => {
     volunteersCollection.deleteOne({ _id: ObjectId(req.body.id) })
       .then(result => {
         if (result.deletedCount > 0) {
-          volunteersCollection.find({})
-            .toArray((err, documents) => {
-              res.send(documents);
-            })
+          res.send(result.deletedCount > 0)
         }
         else {
-          res.status(404).send('error 404')
+          res.status(404).send('Error 404');
         }
       })
   })
