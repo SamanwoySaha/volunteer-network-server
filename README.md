@@ -39,5 +39,3 @@ A Full Stack Volunteer Service App by which any person can join as a volunteer o
 - body parser
 - dotenv
 - nodemon
-
-## [Download Resume](https://drive.google.com/file/d/1sDs2G2lW3txrw5QsLxhjJ0xSHE5-ImWL/view?usp=sharing)
